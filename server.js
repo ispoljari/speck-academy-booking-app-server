@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 
 const app = express();
-const port = process.env.PORT || 5000;
+const { PORT, CLIENT_ORIGIN, HTTP_STATUS_CODES } = require("./config");
 
 app.use(bodyParser.json());
 app.use(
@@ -14,11 +14,16 @@ app.use(
   })
 );
 
+app.use(cors({
+  origin: CLIENT_ORIGIN
+}));
+
+// demo endpoints
+
 app.get("/", (req, res) => {
   return res.json("Hello World from Express!");
 });
 
-// demo endpoints
 app.get("/api/users", (req, res) => {
   return res.json("Here is your list of users");
 });
@@ -27,15 +32,6 @@ app.get("/api/halls", (req, res) => {
   return res.json("Here is your list of halls");
 });
 
-// in production route all requests to client/build/index.html
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
-  });
-}
-
 app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
+  console.log(`Listening on port ${PORT}`);
 });
