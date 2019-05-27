@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 const { PORT, CLIENT_ORIGIN, HTTP_STATUS_CODES } = require("./config");
@@ -14,9 +15,11 @@ app.use(
   })
 );
 
-app.use(cors({
-  origin: CLIENT_ORIGIN
-}));
+app.use(
+  cors({
+    origin: CLIENT_ORIGIN
+  })
+);
 
 // demo endpoints
 
@@ -32,6 +35,6 @@ app.get("/api/halls", (req, res) => {
   return res.json("Here is your list of halls");
 });
 
-app.listen(port, () => {
+app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
