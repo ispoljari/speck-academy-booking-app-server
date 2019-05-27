@@ -23,10 +23,6 @@ app.use(
 
 // demo endpoints
 
-app.get("/", (req, res) => {
-  return res.json("Hello World from Express!");
-});
-
 app.get("/api/users", (req, res) => {
   return res.json("Here is your list of users");
 });
