@@ -1,6 +1,7 @@
 const db = require("../../db/connect");
 const express = require("express");
-const { HTTP_STATUS_CODES } = require("../../config");
+const HTTP_STATUS_CODES = require("../../enums/http_status_codes");
+const RESERVATION_TYPES = require("../../enums/reservation_types");
 
 const getReservations = (request, response) => {
   db.query("SELECT * FROM Reservations ORDER BY id ASC")
@@ -24,7 +25,6 @@ const createReservation = (request, response) => {
   const {
     reservationTitle,
     reservationDescription,
-    reservationStatus,
     citizenFullName,
     citizenOrganization,
     citizenEmail,
@@ -36,6 +36,7 @@ const createReservation = (request, response) => {
     .slice(0, 10); // YYYY-MM-DD
   const reservationStartTime = new Date(body.reservationStartTime); // HH:MM:SS
   const reservationEndTime = new Date(body.reservationEndTime); // HH:MM:SS
+  const reservationStatus = RESERVATION_TYPES.PENDING;
 
   db.query(
     `INSERT INTO Reservations (hall_fk, reservation_title, reservation_description, reservation_status, reservation_date,
