@@ -1,6 +1,6 @@
 const db = require("../../db/connect");
 const express = require("express");
-const HTTP_STATUS_CODES = require("../../enums/http_status_codes");
+const { HTTP_STATUS_CODES } = require("../../enums");
 const _ = require("lodash");
 
 const getHalls = async (request, response) => {

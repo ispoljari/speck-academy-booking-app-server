@@ -1,7 +1,7 @@
 const db = require("../../db/connect");
 const express = require("express");
 const bcrypt = require("bcrypt");
-const HTTP_STATUS_CODES = require("../../enums/http_status_codes");
+const { HTTP_STATUS_CODES } = require("../../enums");
 
 const adminLogin = async (request, response) => {
   const { userName, password } = request.body;
