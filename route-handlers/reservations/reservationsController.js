@@ -1,7 +1,10 @@
 const db = require("../../db/connect");
 const express = require("express");
-const HTTP_STATUS_CODES = require("../../enums/http_status_codes");
-const RESERVATION_TYPES = require("../../enums/reservation_types");
+const {
+  HTTP_STATUS_CODES,
+  RESERVATION_TYPES,
+  isValueValidEnum
+} = require("../../enums");
 
 const getReservations = (request, response) => {
   db.query("SELECT * FROM Reservations ORDER BY id ASC")
@@ -25,17 +28,15 @@ const createReservation = (request, response) => {
   const {
     reservationTitle,
     reservationDescription,
+    reservationDate,
+    reservationStartTime,
+    reservationEndTime,
     citizenFullName,
     citizenOrganization,
     citizenEmail,
     citizenPhoneNumber
   } = body;
   const hallFk = parseInt(body.hallFk);
-  const reservationDate = new Date(body.reservationDate)
-    .toISOString()
-    .slice(0, 10); // YYYY-MM-DD
-  const reservationStartTime = new Date(body.reservationStartTime); // HH:MM:SS
-  const reservationEndTime = new Date(body.reservationEndTime); // HH:MM:SS
   const reservationStatus = RESERVATION_TYPES.PENDING;
 
   db.query(
@@ -62,45 +63,18 @@ const createReservation = (request, response) => {
     });
 };
 
-const updateReservation = (request, response) => {
+const updateReservationStatus = (request, response) => {
   const { body, params } = request;
-  const {
-    reservationTitle,
-    reservationDescription,
-    reservationStatus,
-    citizenFullName,
-    citizenOrganization,
-    citizenEmail,
-    citizenPhoneNumber
-  } = body;
   const id = parseInt(params.id);
-  const hallFk = parseInt(body.hallFk);
-  const reservationDate = new Date(body.reservationDate)
-    .toISOString()
-    .slice(0, 10); // YYYY-MM-DD
-  const reservationStartTime = new Date(body.reservationStartTime); // HH:MM:SS
-  const reservationEndTime = new Date(body.reservationEndTime); // HH:MM:SS
+  const reservationStatus = body.reservationStatus;
+  if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
+    throw new Error("Invalid enum value from");
+  }
   const updatedAt = new Date();
 
   db.query(
-    `UPDATE Reservations SET hallFK = $1, reservation_title = $2, reservation_description = $3, reservation_status = $4,
-         reservation_date = $5, reservation_start_time = $6, reservation_end_time = $7, citizen_full_name = $8,
-         citizen_organization = $9, citizen_email = $10, citizen_phone_number = $11, updated_at = $12 WHERE id = $13`,
-    [
-      hallFk,
-      reservationTitle,
-      reservationDescription,
-      reservationStatus,
-      reservationDate,
-      reservationStartTime,
-      reservationEndTime,
-      citizenFullName,
-      citizenOrganization,
-      citizenEmail,
-      citizenPhoneNumber,
-      updatedAt,
-      id
-    ]
+    "UPDATE Reservations SET reservation_status = $1 updated_at = $2 WHERE id = $3",
+    [reservationStatus, updatedAt, id]
   )
     .then(res => response.status(HTTP_STATUS_CODES.OK).json({}))
     .catch(error => {
@@ -127,10 +101,10 @@ const getReservationsByReservationStatus = async (request, response) => {
 const router = new express.Router();
 
 router.route("/").get(getReservations);
-router.route("/:id").get(getReservationById);
-router.route("/create").post(createReservation);
-router.route("/update/:id").put(updateReservation);
-router.route("/delete/:id").delete(deleteReservation);
 router.route("/pending").get(getReservationsByReservationStatus);
+router.route("/create").post(createReservation);
+router.route("/:id").get(getReservationById);
+router.route("/update/:id").put(updateReservationStatus);
+router.route("/delete/:id").delete(deleteReservation);
 
 module.exports = router;
