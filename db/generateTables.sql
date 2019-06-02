@@ -14,7 +14,7 @@ CREATE TABLE Reservations(
     id SERIAL PRIMARY KEY,
     hall_fk INT REFERENCES Halls(ID) NOT NULL,
     reservation_title VARCHAR(256) NOT NULL,
-    reservation_description VARCHAR(1024) NOT NULL,
+    reservation_description VARCHAR(500) NOT NULL,
     reservation_status reservation_status NOT NULL,
     reservation_date DATE NOT NULL,
     reservation_start_time TIME NOT NULL,
