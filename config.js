@@ -12,4 +12,17 @@ const HTTP_STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500
 };
 
-module.exports = { PORT, HTTP_STATUS_CODES, CLIENT_ORIGIN };
+const DB_CONNECTION = {
+  user: process.env.DB_USER || "postgres",
+  host: process.env.DB_HOST || "localhost",
+  password: process.env.DB_PASSWORD || "123456",
+  database: process.env.DB_NAME || "postgres",
+  port: process.env.DB_PORT || "5432"
+};
+
+module.exports = {
+  PORT,
+  HTTP_STATUS_CODES,
+  CLIENT_ORIGIN,
+  DB_CONNECTION
+};
