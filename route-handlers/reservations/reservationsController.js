@@ -63,12 +63,15 @@ const createReservation = (request, response) => {
     });
 };
 
-const updateReservationStatus = (request, response) => {
+const updateReservationStatus = (request, response, next) => {
   const { body, params } = request;
   const id = parseInt(params.id);
   const reservationStatus = body.reservationStatus;
   if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
-    throw new Error("Invalid enum value");
+    next({
+      status: HTTP_STATUS_CODES.BAD_REQUEST,
+      message: "Invalid enum value"
+    });
   }
   const updatedAt = new Date();
 

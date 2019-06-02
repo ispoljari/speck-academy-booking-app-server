@@ -2,7 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
-const { PORT, CLIENT_ORIGIN, HTTP_STATUS_CODES } = require("./config");
+const { PORT, CLIENT_ORIGIN } = require("./config");
+const { HTTP_STATUS_CODES } = require("./enums");
 const {
   hallsHandler,
   reservationsHandler,
@@ -32,11 +33,18 @@ app.use((req, res, next) => {
 app.use("/api/halls", hallsHandler);
 app.use("/api/reservations", reservationsHandler);
 app.use("/api/admins", adminsHandler);
+// TODO catch errors
 
-app.use("*", (req, res) =>
+app.use((req, res) =>
   res.status(HTTP_STATUS_CODES.NOT_FOUND).json({
     message: "Invalid URL"
   })
 );
+
+app.use((err, req, res, next) => {
+  res
+    .status(err.status || HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
+    .send({ message: err.message });
+});
 
 app.listen(PORT, () => console.log(`Server Listening on port ${PORT}!`));
