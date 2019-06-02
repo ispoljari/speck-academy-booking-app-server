@@ -117,6 +117,12 @@ const deleteReservation = (request, response) => {
     });
 };
 
+const getReservationsByReservationStatus = async (request, response) => {
+  const dbResponse = await db.query(`SELECT * FROM Reservations JOIN Halls ON Halls.id = hall_fk
+    WHERE reservation_status = 'pending'`);
+  response.status(HTTP_STATUS_CODES.OK).json(dbResponse.rows);
+};
+
 const router = new express.Router();
 
 router.route("/").get(getReservations);
@@ -124,5 +130,6 @@ router.route("/:id").get(getReservationById);
 router.route("/create").post(createReservation);
 router.route("/update/:id").put(updateReservation);
 router.route("/delete/:id").delete(deleteReservation);
+router.route("/pending").get(getReservationsByReservationStatus);
 
 module.exports = router;
