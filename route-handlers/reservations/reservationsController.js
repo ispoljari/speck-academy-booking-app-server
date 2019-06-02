@@ -68,12 +68,12 @@ const updateReservationStatus = (request, response) => {
   const id = parseInt(params.id);
   const reservationStatus = body.reservationStatus;
   if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
-    throw new Error("Invalid enum value from");
+    throw new Error("Invalid enum value");
   }
   const updatedAt = new Date();
 
   db.query(
-    "UPDATE Reservations SET reservation_status = $1 updated_at = $2 WHERE id = $3",
+    "UPDATE Reservations SET reservation_status = $1, updated_at = $2 WHERE id = $3",
     [reservationStatus, updatedAt, id]
   )
     .then(res => response.status(HTTP_STATUS_CODES.OK).json({}))
@@ -93,8 +93,9 @@ const deleteReservation = (request, response) => {
 };
 
 const getReservationsByReservationStatus = async (request, response) => {
-  const dbResponse = await db.query(`SELECT * FROM Reservations JOIN Halls ON Halls.id = hall_fk
-    WHERE reservation_status = 'pending'`);
+  const dbResponse = await db.query(`SELECT Reservations.*, row_to_json((SELECT d FROM (SELECT halls.*) d)) AS hall
+  FROM Reservations JOIN Halls ON hall_Fk = halls.id
+  WHERE reservation_status = 'pending'`);
   response.status(HTTP_STATUS_CODES.OK).json(dbResponse.rows);
 };
 
@@ -104,7 +105,7 @@ router.route("/").get(getReservations);
 router.route("/pending").get(getReservationsByReservationStatus);
 router.route("/create").post(createReservation);
 router.route("/:id").get(getReservationById);
-router.route("/update/:id").put(updateReservationStatus);
+router.route("/update/:id").patch(updateReservationStatus);
 router.route("/delete/:id").delete(deleteReservation);
 
 module.exports = router;
