@@ -69,9 +69,9 @@ const getHallsWithReservationsByReservationDateRange = async (
   const { startDate, endDate } = request.body;
   const dbResponse = await db.query(
     `
-    SELECT Halls.*, array_agg(reservations.*) as hall_reservations
+    SELECT Halls.*, json_agg(reservations.*) as hall_reservations
     FROM Halls JOIN reservations ON Halls.id = hall_fk
-    WHERE date BETWEEN $1 AND $2
+    WHERE reservation_date BETWEEN $1 AND $2
     GROUP BY Halls.id`,
     [startDate, endDate]
   );
@@ -81,12 +81,12 @@ const getHallsWithReservationsByReservationDateRange = async (
 const router = new express.Router();
 
 router.route("/").get(getHalls);
-router.route("/:id").get(getHallById);
 router.route("/create").post(createHall);
-router.route("/update/:id").put(updateHall);
-router.route("/delete/:id").delete(deleteHall);
 router
   .route("/reservations")
   .get(getHallsWithReservationsByReservationDateRange);
+router.route("/:id").get(getHallById);
+router.route("/update/:id").put(updateHall);
+router.route("/delete/:id").delete(deleteHall);
 
 module.exports = router;
