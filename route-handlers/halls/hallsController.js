@@ -8,9 +8,23 @@ const getHalls = async (request, response) => {
   response.status(HTTP_STATUS_CODES.OK).json(dbResponse.rows);
 };
 
-const getHallById = async (request, response) => {
+const getHallById = async (request, response, next) => {
   const id = parseInt(request.params.id);
+  if (isNaN(id)) {
+    next({
+      status: HTTP_STATUS_CODES.BAD_REQUEST,
+      message: "id should be a number"
+    });
+    return;
+  }
   const dbResponse = await db.query("SELECT * FROM Halls WHERE id = $1", [id]);
+  if (!dbResponse.rows.length > 0) {
+    next({
+      status: HTTP_STATUS_CODES.BAD_REQUEST,
+      message: "Hall with that id does not exist"
+    });
+    return;
+  }
   response.status(HTTP_STATUS_CODES.OK).json(dbResponse.rows[0]);
 };
 
@@ -18,18 +32,22 @@ const createHall = async (request, response) => {
   const { name, address, pictureUrl, description } = request.body;
   await db.query(
     `INSERT INTO Halls (name, address, picture_url, description) 
-  VALUES ($1, $2, $3, $4)`,
+    VALUES ($1, $2, $3, $4)`,
     [name, address, pictureUrl, description]
   );
   response.status(HTTP_STATUS_CODES.CREATED).json({});
 };
 
-const updateHall = async (request, response) => {
+const updateHall = async (request, response, next) => {
   const id = parseInt(request.params.id);
   const dbResponse = await db.query("SELECT * FROM Halls WHERE id = $1", [id]);
   const hall = dbResponse.rows[0];
   if (!hall) {
-    throw new Error("Hall does not exist");
+    next({
+      status: HTTP_STATUS_CODES.BAD_REQUEST,
+      message: "Hall with that id does not exist"
+    });
+    return;
   }
 
   const { name, address, pictureUrl, description } = request.body;
