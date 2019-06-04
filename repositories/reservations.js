@@ -1,4 +1,5 @@
 const db = require("../db/connect");
+const { map: mapHalls } = require("./halls");
 
 const map = dbReservations => ({
   id: dbReservations.id,
@@ -14,7 +15,8 @@ const map = dbReservations => ({
   citizenEmail: dbReservations.citizen_email,
   citizenPhoneNumber: dbReservations.citizen_phone_number,
   createdAt: dbReservations.created_at,
-  updatedAt: dbReservations.updated_at
+  updatedAt: dbReservations.updated_at,
+  ...(dbReservations.hall ? { hall: mapHalls(dbReservations.hall) } : {})
 });
 
 const getAll = async () => {
@@ -84,7 +86,7 @@ const getAllByReservationStatus = async () => {
   const dbResponse = await db.query(`SELECT Reservations.*, row_to_json((SELECT d FROM (SELECT halls.*) d)) AS hall
   FROM Reservations JOIN Halls ON hall_Fk = halls.id
   WHERE reservation_status = 'pending'`);
-  return dbResponse.rows;
+  return dbResponse.rows.map(map);
 };
 
 module.exports = {
@@ -93,5 +95,6 @@ module.exports = {
   create,
   update,
   deleteById,
-  getAllByReservationStatus
+  getAllByReservationStatus,
+  map
 };
