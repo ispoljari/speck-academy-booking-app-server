@@ -33,7 +33,6 @@ app.use((req, res, next) => {
 app.use("/api/halls", hallsHandler);
 app.use("/api/reservations", reservationsHandler);
 app.use("/api/admins", adminsHandler);
-// TODO catch errors
 
 app.use((req, res) =>
   res.status(HTTP_STATUS_CODES.NOT_FOUND).json({
