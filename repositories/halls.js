@@ -1,4 +1,5 @@
 const db = require("../db/connect");
+const { map: mapReservation } = require("./reservations");
 
 const map = dbHall => ({
   id: dbHall.id,
@@ -7,7 +8,10 @@ const map = dbHall => ({
   pictureUrl: dbHall.picture_url,
   description: dbHall.description,
   createdAt: dbHall.created_at,
-  updatedAt: dbHall.updated_at
+  updatedAt: dbHall.updated_at,
+  ...(dbHall.hall_reservations
+    ? { hallReservaltions: dbHall.hall_reservations.map(mapReservation) }
+    : {})
 });
 
 const getAll = async () => {
@@ -54,7 +58,7 @@ const getAllWithReservationsByReservationDateRange = async (
     [startDate, endDate]
   );
 
-  return dbResponse.rows;
+  return dbResponse.rows.map(map);
 };
 
 const getByIdWithReservations = async (id, reservationDate) => {
@@ -65,7 +69,7 @@ const getByIdWithReservations = async (id, reservationDate) => {
   GROUP BY Halls.id`,
     [id, reservationDate]
   );
-  return dbResponse.rows[0];
+  return dbResponse.rows.length > 0 ? map(dbResponse.rows[0]) : null;
 };
 
 module.exports = {
@@ -75,5 +79,6 @@ module.exports = {
   update,
   deleteById,
   getAllWithReservationsByReservationDateRange,
-  getByIdWithReservations
+  getByIdWithReservations,
+  map
 };
