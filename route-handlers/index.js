@@ -1,6 +1,6 @@
-const hallsHandler = require("./halls/hallsController");
-const reservationsHandler = require("./reservations/reservationsController");
-const adminsHandler = require("./admins/adminsController");
+const hallsHandler = require("./halls");
+const reservationsHandler = require("./reservations");
+const adminsHandler = require("./admins");
 
 module.exports = {
   hallsHandler,
