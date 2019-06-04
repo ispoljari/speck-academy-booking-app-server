@@ -1,27 +1,14 @@
 const db = require("../db/connect");
-const { map: mapReservation } = require("./reservations");
-
-const map = dbHall => ({
-  id: dbHall.id,
-  name: dbHall.name,
-  address: dbHall.address,
-  pictureUrl: dbHall.picture_url,
-  description: dbHall.description,
-  createdAt: dbHall.created_at,
-  updatedAt: dbHall.updated_at,
-  ...(dbHall.hall_reservations
-    ? { hallReservaltions: dbHall.hall_reservations.map(mapReservation) }
-    : {})
-});
+const { mapHalls } = require("./Utils");
 
 const getAll = async () => {
   const dbResponse = await db.query("SELECT * FROM Halls ORDER BY id ASC");
-  return dbResponse.rows.map(map);
+  return dbResponse.rows.map(mapHalls);
 };
 
 const getById = async id => {
   const dbResponse = await db.query("SELECT * FROM Halls WHERE id = $1", [id]);
-  return dbResponse.rows.length > 0 ? map(dbResponse.rows[0]) : null;
+  return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
 };
 
 const create = async (name, address, pictureUrl, description) => {
@@ -42,7 +29,7 @@ const update = async (name, address, pictureUrl, description, id) => {
 
 const deleteById = async id => {
   const dbResponse = await db.query("DELETE FROM Halls WHERE id = $1", [id]);
-  return dbResponse.rows.length > 0 ? map(dbResponse.rows[0]) : null;
+  return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
 };
 
 const getAllWithReservationsByReservationDateRange = async (
@@ -58,7 +45,7 @@ const getAllWithReservationsByReservationDateRange = async (
     [startDate, endDate]
   );
 
-  return dbResponse.rows.map(map);
+  return dbResponse.rows.map(mapHalls);
 };
 
 const getByIdWithReservations = async (id, reservationDate) => {
@@ -69,7 +56,7 @@ const getByIdWithReservations = async (id, reservationDate) => {
   GROUP BY Halls.id`,
     [id, reservationDate]
   );
-  return dbResponse.rows.length > 0 ? map(dbResponse.rows[0]) : null;
+  return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
 };
 
 module.exports = {
@@ -79,6 +66,5 @@ module.exports = {
   update,
   deleteById,
   getAllWithReservationsByReservationDateRange,
-  getByIdWithReservations,
-  map
+  getByIdWithReservations
 };
