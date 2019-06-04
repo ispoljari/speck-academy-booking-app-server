@@ -5,7 +5,7 @@ const map = dbReservations => ({
   id: dbReservations.id,
   hallFk: dbReservations.hall_fk,
   reservationTitle: dbReservations.reservation_title,
-  reservationRescription: dbReservations.reservation_description,
+  reservationDescription: dbReservations.reservation_description,
   reservationStatus: dbReservations.reservation_status,
   reservationDate: dbReservations.reservation_date,
   reservationStartTime: dbReservations.reservation_start_time,
@@ -86,7 +86,7 @@ const getAllByReservationStatus = async () => {
   const dbResponse = await db.query(`SELECT Reservations.*, row_to_json((SELECT d FROM (SELECT halls.*) d)) AS hall
   FROM Reservations JOIN Halls ON hall_Fk = halls.id
   WHERE reservation_status = 'pending'`);
-  return dbResponse.rows.map(map);
+  return dbResponse.rows;
 };
 
 module.exports = {
