@@ -8,23 +8,21 @@ const getHalls = async (request, response) => {
 };
 
 const getHallById = async (request, response, next) => {
-  const id = parseInt(request.params.id);
-  if (isNaN(id)) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "id should be a number"
+  try {
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      throw new Error("id should be a number");
+    }
+    const hall = await hallRepository.getById(id);
+    if (!hall) {
+      throw new Error("Hall with that id does not exist");
+    }
+    response.status(HTTP_STATUS_CODES.OK).json(hall);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+      message: error.message
     });
-    return;
   }
-  const hall = await hallRepository.getById(id);
-  if (!hall) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Hall with that id does not exist"
-    });
-    return;
-  }
-  response.status(HTTP_STATUS_CODES.OK).json(hall);
 };
 
 const createHall = async (request, response) => {
