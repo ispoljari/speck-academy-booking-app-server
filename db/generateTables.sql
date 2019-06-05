@@ -4,8 +4,8 @@ CREATE TABLE Halls(
     address VARCHAR(256) NOT NULL,
     picture_url VARCHAR(1024) NOT NULL,
     description VARCHAR(1024) NOT NULL, 
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 --CREATE TYPE reservation_status AS ENUM ('pending', 'approved', 'denied');
@@ -23,24 +23,24 @@ CREATE TABLE Reservations(
     citizen_organization VARCHAR(256),
     citizen_email VARCHAR(256) NOT NULL,
     citizen_phone_number VARCHAR(256) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW() 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() 
 );
 
 CREATE TABLE Admins(
     id SERIAL PRIMARY KEY,
     user_name VARCHAR(256) NOT NULL UNIQUE,
     hashed_password VARCHAR(1024) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()       
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()       
 );
 
 CREATE TABLE Sessions(
     id uuid PRIMARY KEY,
     admin_fk INT REFERENCES Admins(id) NOT NULL,
-    login_timestamp TIMESTAMP NOT NULL,
-    expiry_date TIMESTAMP NOT NULL,
+    login_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    expiry_date TIMESTAMP WITH TIME ZONE NOT NULL,
     logout_timestamp TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()       
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()       
 );
