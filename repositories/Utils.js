@@ -1,3 +1,21 @@
+const mapSessions = dbSession => ({
+  id: dbSession.id,
+  adminFk: dbSession.admin_fk,
+  loginTimestamp: dbSession.login_timestamp,
+  expiryDate: dbSession.expiry_date,
+  logoutTimestamp: dbSession.logout_timestamp,
+  createdAt: dbSession.created_at,
+  updatedAt: dbSession.updated_at
+});
+
+const mapAdmins = dbAdmin => ({
+  id: dbAdmin.id,
+  userName: dbAdmin.user_name,
+  hashedPassword: dbAdmin.hashed_password,
+  createdAt: dbAdmin.created_at,
+  updatedAt: dbAdmin.updated_at
+});
+
 const mapReservations = dbReservations => ({
   id: dbReservations.id,
   hallFk: dbReservations.hall_fk,
@@ -31,5 +49,7 @@ const mapHalls = dbHall => ({
 
 module.exports = {
   mapHalls,
-  mapReservations
+  mapReservations,
+  mapAdmins,
+  mapSessions
 };

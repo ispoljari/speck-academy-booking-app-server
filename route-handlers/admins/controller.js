@@ -25,7 +25,7 @@ const adminLogin = async (request, response) => {
       loginTimestamp.toISO(),
       expiryDate.toISO()
     );
-    response.cookie("sessionId", uuid);
+    response.cookie("sessionId", uuid, { expires: expiryDate.toMillis });
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
     response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({

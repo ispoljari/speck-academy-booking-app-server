@@ -34,7 +34,7 @@ app.use(async (req, res, next) => {
   const session = await sessionRepository.getById(sessionId);
   const isAdmin =
     Boolean(session) &&
-    DateTime.local() <= DateTime.fromJSDate(session.expiry_date);
+    DateTime.local() <= DateTime.fromJSDate(session.expiryDate);
   req.isAdmin = isAdmin;
   next();
 });
@@ -49,9 +49,9 @@ app.use((req, res) =>
 );
 
 app.use((err, req, res, next) => {
-  res
-    .status(err.status || HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-    .send({ message: err.message });
+  res.status(err.status || HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).send({
+    message: err.message
+  });
 });
 
 app.listen(PORT, () => console.log(`Server Listening on port ${PORT}!`));
