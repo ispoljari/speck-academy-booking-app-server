@@ -36,9 +36,10 @@ CREATE TABLE Admins(
 );
 
 CREATE TABLE Sessions(
-    id SERIAL PRIMARY KEY,
+    id uuid PRIMARY KEY,
     admin_fk INT REFERENCES Admins(id) NOT NULL,
     login_timestamp TIMESTAMP NOT NULL,
+    expiry_date TIMESTAMP NOT NULL,
     logout_timestamp TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()       
