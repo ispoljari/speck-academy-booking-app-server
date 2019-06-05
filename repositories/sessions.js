@@ -8,6 +8,14 @@ const create = async (uuid, adminFk, loginTimestamp, expiryDate) => {
   );
 };
 
+const getById = async sessionId => {
+  const dbResponse = await db.query(`SELECT * FROM Sessions WHERE id = $1 `, [
+    sessionId
+  ]);
+  return dbResponse.rows[0];
+};
+
 module.exports = {
-  create
+  create,
+  getById
 };
