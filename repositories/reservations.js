@@ -1,5 +1,5 @@
 const db = require("../db/connect");
-const { mapReservations } = require("./Utils");
+const { mapReservations } = require("./utils");
 
 const getAll = async () => {
   const dbResponse = await db.query(

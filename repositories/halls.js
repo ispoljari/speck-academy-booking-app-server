@@ -1,5 +1,5 @@
 const db = require("../db/connect");
-const { mapHalls } = require("./Utils");
+const { mapHalls } = require("./utils");
 
 const getAll = async () => {
   const dbResponse = await db.query("SELECT * FROM Halls ORDER BY id ASC");
