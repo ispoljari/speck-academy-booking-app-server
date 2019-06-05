@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const app = express();
+const cookieParser = require("cookie-parser");
 const { PORT, CLIENT_ORIGIN } = require("./config");
 const { HTTP_STATUS_CODES } = require("./enums");
 const {
@@ -10,7 +10,8 @@ const {
   adminsHandler
 } = require("./route-handlers");
 
-const router = new express.Router();
+const app = express();
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 app.use(
