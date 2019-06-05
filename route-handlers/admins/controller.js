@@ -12,11 +12,11 @@ const adminLogin = async (request, response) => {
     if (!admin) {
       throw new Error("Invalid credentials");
     }
-    if (!(await bcrypt.compare(password, hashedPassword))) {
+    if (!(await bcrypt.compare(password, admin.hashedPassword))) {
       throw new Error("Invalid credentials");
     }
     const uuid = uuidv4();
-    const loginTimestamp = DateTime.local;
+    const loginTimestamp = DateTime.local();
     const expiryDate = loginTimestamp.plus({ days: 1 });
 
     await sessionsRepository.create(
