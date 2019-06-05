@@ -26,12 +26,18 @@ const getHallById = async (request, response, next) => {
 };
 
 const createHall = async (request, response) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const { name, address, pictureUrl, description } = request.body;
   await hallRepository.create(name, address, pictureUrl, description);
   response.status(HTTP_STATUS_CODES.CREATED).json({});
 };
 
 const updateHall = async (request, response, next) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const id = parseInt(request.params.id);
   const hall = await hallRepository.getById(id);
   if (!hall) {
@@ -68,6 +74,9 @@ const updateHall = async (request, response, next) => {
 };
 
 const deleteHall = async (request, response, next) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const id = parseInt(request.params.id);
   const hall = await hallRepository.getById(id);
   if (!hall) {
@@ -86,6 +95,9 @@ const getHallsWithReservationsByReservationDateRange = async (
   request,
   response
 ) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const { startDate, endDate } = request.body;
   const hallsWithReservationsByReservationDateRange = await hallRepository.getAllWithReservationsByReservationDateRange(
     startDate,

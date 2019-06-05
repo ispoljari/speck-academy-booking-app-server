@@ -11,6 +11,9 @@ const getReservations = async (request, response) => {
 };
 
 const getReservationById = async (request, response, next) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const id = parseInt(request.params.id);
   if (isNaN(id)) {
     next({
@@ -63,6 +66,9 @@ const createReservation = async (request, response) => {
 };
 
 const updateReservationStatus = async (request, response, next) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const { body, params } = request;
   const id = parseInt(params.id);
   const reservation = await reservationRepository.getById(id);
@@ -86,6 +92,9 @@ const updateReservationStatus = async (request, response, next) => {
 };
 
 const deleteReservation = async (request, response, next) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const id = parseInt(request.params.id);
   const reservation = await reservationRepository.getById(id);
   if (!reservation) {
@@ -100,6 +109,9 @@ const deleteReservation = async (request, response, next) => {
 };
 
 const getReservationsByReservationStatus = async (request, response) => {
+  if (!request.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const reservations = await reservationRepository.getAllByReservationStatus();
   response.status(HTTP_STATUS_CODES.OK).json(reservations);
 };
