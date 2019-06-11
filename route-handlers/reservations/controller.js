@@ -1,4 +1,5 @@
 const reservationRepository = require("../../repositories/reservations");
+const { DateTime } = require("luxon");
 const {
   HTTP_STATUS_CODES,
   RESERVATION_TYPES,
@@ -46,6 +47,9 @@ const createReservation = async (request, response) => {
     citizenEmail,
     citizenPhoneNumber
   } = body;
+  if (reservationStartTime >= reservationEndTime) {
+    throw new Error("reservationStartTime cannot be after reservationEndTime");
+  }
   const hallFk = parseInt(body.hallFk);
   const reservationStatus = RESERVATION_TYPES.PENDING;
 
@@ -69,6 +73,7 @@ const updateReservationStatus = async (request, response, next) => {
   if (!request.isAdmin) {
     throw new Error("Unauthorized");
   }
+
   const { body, params } = request;
   const id = parseInt(params.id);
   const reservation = await reservationRepository.getById(id);
@@ -79,6 +84,7 @@ const updateReservationStatus = async (request, response, next) => {
     });
     return;
   }
+
   const reservationStatus = body.reservationStatus;
   if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
     next({
@@ -87,6 +93,15 @@ const updateReservationStatus = async (request, response, next) => {
     });
     return;
   }
+
+  /* if (reservationStatus === RESERVATION_TYPES.DENIED) {
+    await reservationRepository.deleteById(id);
+  response.status(HTTP_STATUS_CODES.OK).json({});
+  } else {
+    await reservationRepository.update(reservationStatus, id);
+  response.status(HTTP_STATUS_CODES.OK).json({});
+  } */
+
   await reservationRepository.update(reservationStatus, id);
   response.status(HTTP_STATUS_CODES.OK).json({});
 };

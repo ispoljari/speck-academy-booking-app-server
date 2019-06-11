@@ -3,35 +3,56 @@ const { HTTP_STATUS_CODES } = require("../../enums");
 const _ = require("lodash");
 
 const getHalls = async (request, response) => {
-  const halls = await hallRepository.getAll();
-  response.status(HTTP_STATUS_CODES.OK).json(halls);
+  try {
+    const halls = await hallRepository.getAll();
+    response.status(HTTP_STATUS_CODES.OK).json(halls);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
+  }
 };
 
-const getHallById = async (request, response, next) => {
+const getHallById = async (request, response) => {
   try {
     const id = parseInt(request.params.id);
     if (isNaN(id)) {
-      throw new Error("id should be a number");
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
     }
     const hall = await hallRepository.getById(id);
     if (!hall) {
-      throw new Error("Hall with that id does not exist");
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that id does not exist"
+      });
+      return;
     }
     response.status(HTTP_STATUS_CODES.OK).json(hall);
   } catch (error) {
-    response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       message: error.message
     });
   }
 };
 
 const createHall = async (request, response) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const { name, address, pictureUrl, description } = request.body;
+    await hallRepository.create(name, address, pictureUrl, description);
+    response.status(HTTP_STATUS_CODES.CREATED).json({});
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
   }
-  const { name, address, pictureUrl, description } = request.body;
-  await hallRepository.create(name, address, pictureUrl, description);
-  response.status(HTTP_STATUS_CODES.CREATED).json({});
 };
 
 const updateHall = async (request, response, next) => {
@@ -95,17 +116,29 @@ const getHallsWithReservationsByReservationDateRange = async (
   request,
   response
 ) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const { startDate, endDate } = request.body;
+    if (startDate >= endDate) {
+      throw new Error("startDate cannot be after endDate");
+    }
+    const hallsWithReservationsByReservationDateRange = await hallRepository.getAllWithReservationsByReservationDateRange(
+      startDate,
+      endDate
+    );
+    response
+      .status(HTTP_STATUS_CODES.OK)
+      .json(hallsWithReservationsByReservationDateRange);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
   }
-  const { startDate, endDate } = request.body;
-  const hallsWithReservationsByReservationDateRange = await hallRepository.getAllWithReservationsByReservationDateRange(
-    startDate,
-    endDate
-  );
-  response
-    .status(HTTP_STATUS_CODES.OK)
-    .json(hallsWithReservationsByReservationDateRange);
 };
 
 const getHallByIdWithReservations = async (request, response, next) => {

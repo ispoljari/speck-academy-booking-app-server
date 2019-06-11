@@ -60,12 +60,7 @@ const update = async (reservationStatus, id) => {
 };
 
 const deleteById = async id => {
-  const dbResponse = await db.query("DELETE FROM Reservations WHERE id = $1", [
-    id
-  ]);
-  return dbResponse.rows.length > 0
-    ? mapReservations(dbResponse.rows[0])
-    : null;
+  await db.query("DELETE FROM Reservations WHERE id = $1", [id]);
 };
 
 const getAllByReservationStatus = async () => {
