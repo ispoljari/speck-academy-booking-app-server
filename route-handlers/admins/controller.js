@@ -28,12 +28,25 @@ const adminLogin = async (request, response) => {
     response.cookie("sessionId", uuid, { expires: expiryDate.toMillis });
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
-    response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
+  }
+};
+
+const adminLogout = async (request, response) => {
+  try {
+    const { sessionId } = req.cookies;
+    await adminsRepository.updateLogoutTimestamp(sessionId);
+    response.clearCookie("sessionId");
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       message: error.message
     });
   }
 };
 
 module.exports = {
-  adminLogin
+  adminLogin,
+  adminLogout
 };

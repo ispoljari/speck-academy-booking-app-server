@@ -16,7 +16,18 @@ const getById = async sessionId => {
   return dbResponse.rows.length > 0 ? mapSessions(dbResponse.rows[0]) : null;
 };
 
+const updateLogoutTimestamp = async sessionId => {
+  const currentDate = new Date();
+  const logoutTimestamp = currentDate;
+  const updatedAt = currentDate;
+  await db.query(
+    "UPDATE Sessions SET  logout_timestamp = $1, updated_at = $2 WHERE id = $3",
+    [logoutTimestamp, updatedAt, sessionId]
+  );
+};
+
 module.exports = {
   create,
-  getById
+  getById,
+  updateLogoutTimestamp
 };

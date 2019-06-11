@@ -34,6 +34,7 @@ app.use(async (req, res, next) => {
   const session = await sessionRepository.getById(sessionId);
   const isAdmin =
     Boolean(session) &&
+    !Boolean(session.logoutTimestamp) &&
     DateTime.local() <= DateTime.fromJSDate(session.expiryDate);
   req.isAdmin = isAdmin;
   next();
