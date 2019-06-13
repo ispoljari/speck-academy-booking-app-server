@@ -37,7 +37,7 @@ const adminLogin = async (request, response) => {
 const adminLogout = async (request, response) => {
   try {
     const { sessionId } = request.cookies;
-    await adminsRepository.updateLogoutTimestamp(sessionId);
+    await sessionsRepository.deleteById(sessionId);
     response.clearCookie("sessionId");
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
