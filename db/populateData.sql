@@ -19,8 +19,8 @@ INSERT INTO Halls (name, address, picture_url, description) VALUES ('Konferencij
 
 INSERT INTO Reservations (hall_fk, reservation_title, reservation_description, reservation_status, reservation_date, 
 reservation_start_time, reservation_end_time, citizen_full_name, citizen_organization, citizen_email, citizen_phone_number) 
-VALUES (5, 'Re-volt party', 'Igranje najkul igrice ikad', '2019-06-15', '19:30', '23:30', 'Matija Jaić', 
-'Udruga za najkul igre', 'jaicmatija@gmail.com', '097...');
+VALUES (5, 'Re-volt party', 'Igranje najkul igrice ikad', 'pending', '2019-06-23', '13:30', '15:30', 'Netko Netkić', 
+'Udruga za najkul igre d.o.o', 'neki@gmail.com', '097...');
 
 -- Admins
 
