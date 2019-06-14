@@ -7,6 +7,11 @@ const {
   isValueValidEnum
 } = require("../../enums");
 
+const isTimeValid = time => {
+  const dateTime = DateTime.fromFormat(time, "HH:mm:ss");
+  return dateTime.minute % 15 === 0;
+};
+
 const getReservations = async (request, response) => {
   try {
     if (!request.isAdmin) {
@@ -70,13 +75,35 @@ const createReservation = async (request, response) => {
       citizenEmail,
       citizenPhoneNumber
     } = body;
-    // validacija za reservationDate+reservationStartTime+reservationEndTime
+
+    const overlappingReservations = await reservationRepository.getAllOverlappingReservations(
+      reservationDate,
+      reservationStartTime,
+      reservationEndTime
+    );
+    if (overlappingReservations.length > 0) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Reservation overlaps with existing reservations"
+      });
+      return;
+    }
     if (reservationStartTime >= reservationEndTime) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
         message: "reservationEndTime cannot be less than reservationStartTime"
       });
       return;
     }
+
+    if (
+      !isTimeValid(reservationStartTime) ||
+      !isTimeValid(reservationEndTime)
+    ) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Wrong time format"
+      });
+      return;
+    }
+
     const hallFk = parseInt(body.hallFk);
     if (isNaN(hallFk)) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
