@@ -49,6 +49,13 @@ const createHall = async (request, response) => {
     }
 
     const { name, address, pictureUrl, description } = request.body;
+    const hall = await hallRepository.getHallByName(name);
+    if (hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that name already exists"
+      });
+      return;
+    }
     await hallRepository.create(name, address, pictureUrl, description);
     response.status(HTTP_STATUS_CODES.CREATED).json({});
   } catch (error) {
