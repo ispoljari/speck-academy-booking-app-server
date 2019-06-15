@@ -81,15 +81,10 @@ const createReservation = async (request, response) => {
       reservationStartTime,
       reservationEndTime
     );
+
     if (overlappingReservations.length > 0) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
         message: "Reservation overlaps with existing reservations"
-      });
-      return;
-    }
-    if (reservationStartTime >= reservationEndTime) {
-      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-        message: "reservationEndTime cannot be less than reservationStartTime"
       });
       return;
     }
@@ -100,6 +95,20 @@ const createReservation = async (request, response) => {
     ) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
         message: "Wrong time format"
+      });
+      return;
+    }
+
+    if (reservationStartTime >= reservationEndTime) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "reservationEndTime cannot be less than reservationStartTime"
+      });
+      return;
+    }
+
+    if (reservationStartTime < "08:00" || reservationEndTime > "22:00") {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall must be reserved between 08:00h and 22:00h"
       });
       return;
     }
