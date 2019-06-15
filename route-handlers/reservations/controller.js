@@ -8,7 +8,7 @@ const {
 } = require("../../enums");
 
 const isTimeValid = time => {
-  const dateTime = DateTime.fromFormat(time, "HH:mm:ss");
+  const dateTime = DateTime.fromFormat(time, "HH:mm");
   return dateTime.minute % 15 === 0;
 };
 
