@@ -26,8 +26,13 @@ const updateLogoutTimestamp = async sessionId => {
   );
 };
 
+const deleteById = async sessionId => {
+  await db.query("DELETE FROM Sessions WHERE id = $1", [sessionId]);
+};
+
 module.exports = {
   create,
   getById,
-  updateLogoutTimestamp
+  updateLogoutTimestamp,
+  deleteById
 };

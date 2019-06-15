@@ -1,4 +1,5 @@
 const reservationRepository = require("../../repositories/reservations");
+const hallRepository = require("../../repositories/halls");
 const { DateTime } = require("luxon");
 const {
   HTTP_STATUS_CODES,
@@ -6,129 +7,244 @@ const {
   isValueValidEnum
 } = require("../../enums");
 
-const getReservations = async (request, response) => {
-  const reservations = await reservationRepository.getAll();
-  response.status(HTTP_STATUS_CODES.OK).json(reservations);
+const isTimeValid = time => {
+  const dateTime = DateTime.fromFormat(time, "HH:mm");
+  return dateTime.minute % 15 === 0;
 };
 
-const getReservationById = async (request, response, next) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
-  }
-  const id = parseInt(request.params.id);
-  if (isNaN(id)) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "id should be a number"
+const getReservations = async (request, response) => {
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const reservations = await reservationRepository.getAll();
+    response.status(HTTP_STATUS_CODES.OK).json(reservations);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-  const reservation = await reservationRepository.getById(id);
-  if (!reservation) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Reservation with that id does not exist"
+};
+
+const getReservationById = async (request, response) => {
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const reservation = await reservationRepository.getById(id);
+    if (!reservation) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Reservation with that id does not exist"
+      });
+      return;
+    }
+
+    response.status(HTTP_STATUS_CODES.OK).json(reservation);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-  response.status(HTTP_STATUS_CODES.OK).json(reservation);
 };
 
 const createReservation = async (request, response) => {
-  const { body } = request;
-  const {
-    reservationTitle,
-    reservationDescription,
-    reservationDate,
-    reservationStartTime,
-    reservationEndTime,
-    citizenFullName,
-    citizenOrganization,
-    citizenEmail,
-    citizenPhoneNumber
-  } = body;
-  if (reservationStartTime >= reservationEndTime) {
-    throw new Error("reservationStartTime cannot be after reservationEndTime");
-  }
-  const hallFk = parseInt(body.hallFk);
-  const reservationStatus = RESERVATION_TYPES.PENDING;
+  try {
+    const { body } = request;
+    const {
+      reservationTitle,
+      reservationDescription,
+      reservationDate,
+      reservationStartTime,
+      reservationEndTime,
+      citizenFullName,
+      citizenOrganization,
+      citizenEmail,
+      citizenPhoneNumber
+    } = body;
 
-  await reservationRepository.create(
-    hallFk,
-    reservationTitle,
-    reservationDescription,
-    reservationStatus,
-    reservationDate,
-    reservationStartTime,
-    reservationEndTime,
-    citizenFullName,
-    citizenOrganization,
-    citizenEmail,
-    citizenPhoneNumber
-  );
-  response.status(HTTP_STATUS_CODES.CREATED).json({});
+    const overlappingReservations = await reservationRepository.getAllOverlappingReservations(
+      reservationDate,
+      reservationStartTime,
+      reservationEndTime
+    );
+
+    if (overlappingReservations.length > 0) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Reservation overlaps with existing reservations"
+      });
+      return;
+    }
+
+    if (
+      !isTimeValid(reservationStartTime) ||
+      !isTimeValid(reservationEndTime)
+    ) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Wrong time format"
+      });
+      return;
+    }
+
+    if (reservationStartTime >= reservationEndTime) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "reservationEndTime cannot be less than reservationStartTime"
+      });
+      return;
+    }
+
+    if (reservationStartTime < "08:00" || reservationEndTime > "22:00") {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall must be reserved between 08:00h and 22:00h"
+      });
+      return;
+    }
+
+    const hallFk = parseInt(body.hallFk);
+    if (isNaN(hallFk)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "hallFk should be a number"
+      });
+      return;
+    }
+    const hall = await hallRepository.getById(hallFk);
+    if (!hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "You sent the wrong hallFk, hall with that id does not exist"
+      });
+      return;
+    }
+    const reservationStatus = RESERVATION_TYPES.PENDING;
+
+    await reservationRepository.create(
+      hallFk,
+      reservationTitle,
+      reservationDescription,
+      reservationStatus,
+      reservationDate,
+      reservationStartTime,
+      reservationEndTime,
+      citizenFullName,
+      citizenOrganization,
+      citizenEmail,
+      citizenPhoneNumber
+    );
+    response.status(HTTP_STATUS_CODES.CREATED).json({});
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
+  }
 };
 
 const updateReservationStatus = async (request, response, next) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
-  }
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
 
-  const { body, params } = request;
-  const id = parseInt(params.id);
-  const reservation = await reservationRepository.getById(id);
-  if (!reservation) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Reservation with that id does not exist"
+    const { body, params } = request;
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const reservation = await reservationRepository.getById(id);
+    if (!reservation) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Reservation with that id does not exist"
+      });
+      return;
+    }
+
+    const reservationStatus = body.reservationStatus;
+    if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Invalid enum values"
+      });
+      return;
+    }
+
+    if (reservationStatus === RESERVATION_TYPES.DENIED) {
+      await reservationRepository.deleteById(id);
+      response.status(HTTP_STATUS_CODES.OK).json({});
+    } else {
+      await reservationRepository.update(reservationStatus, id);
+      response.status(HTTP_STATUS_CODES.OK).json({});
+    }
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-
-  const reservationStatus = body.reservationStatus;
-  if (!isValueValidEnum(reservationStatus, RESERVATION_TYPES)) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Invalid enum value"
-    });
-    return;
-  }
-
-  /* if (reservationStatus === RESERVATION_TYPES.DENIED) {
-    await reservationRepository.deleteById(id);
-  response.status(HTTP_STATUS_CODES.OK).json({});
-  } else {
-    await reservationRepository.update(reservationStatus, id);
-  response.status(HTTP_STATUS_CODES.OK).json({});
-  } */
-
-  await reservationRepository.update(reservationStatus, id);
-  response.status(HTTP_STATUS_CODES.OK).json({});
 };
 
 const deleteReservation = async (request, response, next) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
-  }
-  const id = parseInt(request.params.id);
-  const reservation = await reservationRepository.getById(id);
-  if (!reservation) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Reservation with that id does not exist"
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const reservation = await reservationRepository.getById(id);
+    if (!reservation) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Reservation with that id does not exist"
+      });
+      return;
+    }
+    await reservationRepository.deleteById(id);
+    response.status(HTTP_STATUS_CODES.OK).json({});
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-  await reservationRepository.deleteById(id);
-  response.status(HTTP_STATUS_CODES.OK).json({});
 };
 
 const getReservationsByReservationStatus = async (request, response) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+    const reservations = await reservationRepository.getAllByReservationStatus();
+    response.status(HTTP_STATUS_CODES.OK).json(reservations);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
   }
-  const reservations = await reservationRepository.getAllByReservationStatus();
-  response.status(HTTP_STATUS_CODES.OK).json(reservations);
 };
 
 module.exports = {

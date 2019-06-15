@@ -70,11 +70,25 @@ const getAllByReservationStatus = async () => {
   return dbResponse.rows.map(mapReservations);
 };
 
+const getAllOverlappingReservations = async (
+  reservationDate,
+  reservationStartTime,
+  reservationEndTime
+) => {
+  const dbResponse = await db.query(
+    `SELECT * FROM Reservations WHERE reservation_date = $1 
+  AND reservation_start_time < $2 AND reservation_end_time > $3`,
+    [reservationDate, reservationEndTime, reservationStartTime]
+  );
+  return dbResponse.rows.map(mapReservations);
+};
+
 module.exports = {
   getAll,
   getById,
   create,
   update,
   deleteById,
-  getAllByReservationStatus
+  getAllByReservationStatus,
+  getAllOverlappingReservations
 };
