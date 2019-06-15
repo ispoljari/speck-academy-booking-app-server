@@ -4,7 +4,7 @@ const cors = require("cors");
 const sessionRepository = require("./repositories/sessions");
 const { DateTime } = require("luxon");
 const cookieParser = require("cookie-parser");
-const { PORT, CLIENT_ORIGIN } = require("./config");
+const { PORT, CLIENT_ORIGIN, COOKIE_SECRET_KEY } = require("./config");
 const { HTTP_STATUS_CODES } = require("./enums");
 const {
   hallsHandler,
@@ -13,24 +13,27 @@ const {
 } = require("./route-handlers");
 
 const app = express();
-app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: CLIENT_ORIGIN,
+    credentials: true
+  })
+);
 
 app.use(bodyParser.json());
+
 app.use(
   bodyParser.urlencoded({
     extended: true
   })
 );
 
-app.use(
-  cors({
-    origin: CLIENT_ORIGIN
-  })
-);
+app.use(cookieParser(COOKIE_SECRET_KEY));
 
 // Base routes
 app.use(async (req, res, next) => {
-  const { sessionId } = req.cookies;
+  const { sessionId } = req.signedCookies;
   const session = await sessionRepository.getById(sessionId);
   const isAdmin =
     Boolean(session) &&
