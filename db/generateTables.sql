@@ -8,7 +8,7 @@ CREATE TABLE Halls(
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
---CREATE TYPE reservation_status AS ENUM ('pending', 'approved', 'denied');
+CREATE TYPE reservation_status AS ENUM ('pending', 'approved', 'denied');
 
 CREATE TABLE Reservations(
     id SERIAL PRIMARY KEY,

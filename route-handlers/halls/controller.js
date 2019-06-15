@@ -22,6 +22,7 @@ const getHallById = async (request, response) => {
       });
       return;
     }
+
     const hall = await hallRepository.getById(id);
     if (!hall) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -29,6 +30,7 @@ const getHallById = async (request, response) => {
       });
       return;
     }
+
     response.status(HTTP_STATUS_CODES.OK).json(hall);
   } catch (error) {
     response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -45,7 +47,15 @@ const createHall = async (request, response) => {
       });
       return;
     }
+
     const { name, address, pictureUrl, description } = request.body;
+    const hall = await hallRepository.getHallByName(name);
+    if (hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that name already exists"
+      });
+      return;
+    }
     await hallRepository.create(name, address, pictureUrl, description);
     response.status(HTTP_STATUS_CODES.CREATED).json({});
   } catch (error) {
@@ -55,61 +65,92 @@ const createHall = async (request, response) => {
   }
 };
 
-const updateHall = async (request, response, next) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
-  }
-  const id = parseInt(request.params.id);
-  const hall = await hallRepository.getById(id);
-  if (!hall) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Hall with that id does not exist"
+const updateHall = async (request, response) => {
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
+
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const hall = await hallRepository.getById(id);
+    if (!hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that id does not exist"
+      });
+      return;
+    }
+
+    const { name, address, pictureUrl, description } = request.body;
+    Object.assign(
+      hall,
+      _.omitBy(
+        {
+          name,
+          address,
+          pictureUrl,
+          description
+        },
+        _.isUndefined
+      )
+    );
+
+    await hallRepository.update(
+      hall.name,
+      hall.address,
+      hall.pictureUrl,
+      hall.description,
+      id
+    );
+    response.status(HTTP_STATUS_CODES.OK).json({});
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-
-  const { name, address, pictureUrl, description } = request.body;
-  // TODO: upload picture
-  Object.assign(
-    hall,
-    _.omitBy(
-      {
-        name,
-        address,
-        pictureUrl,
-        description
-      },
-      _.isUndefined
-    )
-  );
-
-  await hallRepository.update(
-    hall.name,
-    hall.address,
-    hall.pictureUrl,
-    hall.description,
-    id
-  );
-  response.status(HTTP_STATUS_CODES.OK).json({});
 };
 
-const deleteHall = async (request, response, next) => {
-  if (!request.isAdmin) {
-    throw new Error("Unauthorized");
-  }
-  const id = parseInt(request.params.id);
-  const hall = await hallRepository.getById(id);
-  if (!hall) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Hall with that id does not exist"
-    });
-    return;
-  }
+const deleteHall = async (request, response) => {
+  try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
 
-  await hallRepository.deleteById(id);
-  response.status(HTTP_STATUS_CODES.OK).json({});
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const hall = await hallRepository.getById(id);
+    if (!hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that id does not exist"
+      });
+      return;
+    }
+
+    await hallRepository.deleteById(id);
+    response.status(HTTP_STATUS_CODES.OK).json({});
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
+  }
 };
 
 const getHallsWithReservationsByReservationDateRange = async (
@@ -125,8 +166,12 @@ const getHallsWithReservationsByReservationDateRange = async (
     }
     const { startDate, endDate } = request.body;
     if (startDate >= endDate) {
-      throw new Error("startDate cannot be after endDate");
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "endDate cannot be less than startDate"
+      });
+      return;
     }
+
     const hallsWithReservationsByReservationDateRange = await hallRepository.getAllWithReservationsByReservationDateRange(
       startDate,
       endDate
@@ -141,22 +186,35 @@ const getHallsWithReservationsByReservationDateRange = async (
   }
 };
 
-const getHallByIdWithReservations = async (request, response, next) => {
-  const id = parseInt(request.params.id);
-  const hall = await hallRepository.getById(id);
-  if (!hall) {
-    next({
-      status: HTTP_STATUS_CODES.BAD_REQUEST,
-      message: "Hall with that id does not exist"
+const getHallByIdWithReservations = async (request, response) => {
+  try {
+    const id = parseInt(request.params.id);
+    if (isNaN(id)) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "id should be a number"
+      });
+      return;
+    }
+
+    const hall = await hallRepository.getById(id);
+    if (!hall) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that id does not exist"
+      });
+      return;
+    }
+
+    const { reservationDate } = request.body;
+    const hallWithReservations = await hallRepository.getByIdWithReservations(
+      id,
+      reservationDate
+    );
+    response.status(HTTP_STATUS_CODES.OK).json(hallWithReservations);
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
     });
-    return;
   }
-  const { reservationDate } = request.body;
-  const hallWithReservations = await hallRepository.getByIdWithReservations(
-    id,
-    reservationDate
-  );
-  response.status(HTTP_STATUS_CODES.OK).json(hallWithReservations);
 };
 
 module.exports = {

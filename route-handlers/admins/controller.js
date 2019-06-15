@@ -10,10 +10,16 @@ const adminLogin = async (request, response) => {
     const { userName, password } = request.body;
     const admin = await adminsRepository.getByUserName(userName);
     if (!admin) {
-      throw new Error("Invalid credentials");
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Invalid credentials"
+      });
+      return;
     }
     if (!(await bcrypt.compare(password, admin.hashedPassword))) {
-      throw new Error("Invalid credentials");
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Invalid credentials"
+      });
+      return;
     }
     const uuid = uuidv4();
     const loginTimestamp = DateTime.local();
@@ -36,6 +42,12 @@ const adminLogin = async (request, response) => {
 
 const adminLogout = async (request, response) => {
   try {
+    if (!request.isAdmin) {
+      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
+        message: "Not authorized"
+      });
+      return;
+    }
     const { sessionId } = request.cookies;
     await sessionsRepository.deleteById(sessionId);
     response.clearCookie("sessionId");

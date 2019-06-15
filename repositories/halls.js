@@ -40,7 +40,7 @@ const getAllWithReservationsByReservationDateRange = async (
     `
     SELECT Halls.*, json_agg(reservations.*) as hall_reservations
     FROM Halls JOIN reservations ON Halls.id = hall_fk
-    WHERE reservation_date BETWEEN $1 AND $2
+    WHERE reservation_date BETWEEN $1 AND $2 AND reservation_status = 'approved' 
     GROUP BY Halls.id`,
     [startDate, endDate]
   );
@@ -59,6 +59,13 @@ const getByIdWithReservations = async (id, reservationDate) => {
   return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
 };
 
+const getHallByName = async name => {
+  const dbResponse = await db.query(`SELECT * FROM Halls WHERE name = $1`, [
+    name
+  ]);
+  return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
+};
+
 module.exports = {
   getAll,
   getById,
@@ -66,5 +73,6 @@ module.exports = {
   update,
   deleteById,
   getAllWithReservationsByReservationDateRange,
-  getByIdWithReservations
+  getByIdWithReservations,
+  getHallByName
 };
