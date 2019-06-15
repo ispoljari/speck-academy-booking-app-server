@@ -27,7 +27,8 @@ const adminLogin = async (request, response) => {
     );
     response.cookie("sessionId", uuid, {
       expires: expiryDate.toJSDate(),
-      signed: true
+      signed: true,
+      httpOnly: true
     });
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
