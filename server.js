@@ -35,14 +35,21 @@ app.use(cookieParser(COOKIE_SECRET_KEY));
 
 // Base routes
 app.use(async (req, res, next) => {
-  const { sessionId } = req.signedCookies;
-  const session = await sessionRepository.getById(sessionId);
-  const isAdmin =
-    Boolean(session) &&
-    DateTime.local() <= DateTime.fromJSDate(session.expiryDate);
-  req.isAdmin = isAdmin;
-  next();
+  try {
+    const { sessionId } = req.signedCookies;
+    const session = await sessionRepository.getById(sessionId);
+    const isAdmin =
+      Boolean(session) &&
+      DateTime.local() <= DateTime.fromJSDate(session.expiryDate);
+    req.isAdmin = isAdmin;
+    next();
+  } catch (error) {
+    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: error.message
+    });
+  }
 });
+
 app.use("/api/halls", hallsHandler);
 app.use("/api/reservations", reservationsHandler);
 app.use("/api/admins", adminsHandler);
