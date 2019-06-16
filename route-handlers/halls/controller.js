@@ -164,7 +164,7 @@ const getHallsWithReservationsByReservationDateRange = async (
       });
       return;
     }
-    const { startDate, endDate } = request.body;
+    const { startDate, endDate } = request.query;
     if (startDate >= endDate) {
       response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
         message: "endDate cannot be less than startDate"
@@ -204,7 +204,7 @@ const getHallByIdWithReservations = async (request, response) => {
       return;
     }
 
-    const { reservationDate } = request.body;
+    const { reservationDate } = request.query;
     const hallWithReservations = await hallRepository.getByIdWithReservations(
       id,
       reservationDate
