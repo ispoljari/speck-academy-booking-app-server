@@ -1,6 +1,7 @@
 const PORT = process.env.PORT || 8080;
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:3000";
+const COOKIE_SECRET_KEY = process.env.COOKIE_SECRET_KEY;
 
 const DB_CONNECTION = {
   user: process.env.DB_USER || "postgres",
@@ -13,5 +14,6 @@ const DB_CONNECTION = {
 module.exports = {
   PORT,
   CLIENT_ORIGIN,
-  DB_CONNECTION
+  DB_CONNECTION,
+  COOKIE_SECRET_KEY
 };

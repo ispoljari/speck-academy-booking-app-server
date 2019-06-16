@@ -31,7 +31,10 @@ const adminLogin = async (request, response) => {
       loginTimestamp.toISO(),
       expiryDate.toISO()
     );
-    response.cookie("sessionId", uuid, { expires: expiryDate.toJSDate() });
+    response.cookie("sessionId", uuid, {
+      expires: expiryDate.toJSDate(),
+      signed: true
+    });
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
     response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -48,7 +51,7 @@ const adminLogout = async (request, response) => {
       });
       return;
     }
-    const { sessionId } = request.cookies;
+    const { sessionId } = request.signedCookies;
     await sessionsRepository.deleteById(sessionId);
     response.clearCookie("sessionId");
     response.status(HTTP_STATUS_CODES.OK).json({});
