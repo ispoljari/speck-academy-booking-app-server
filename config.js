@@ -1,7 +1,9 @@
 const PORT = process.env.PORT || 8080;
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:3000";
-const COOKIE_SECRET_KEY = process.env.COOKIE_SECRET_KEY;
+const COOKIE_SECRET_KEY =
+  process.env.COOKIE_SECRET_KEY ||
+  "Coding is easy. All you have to do is comment out the wrong code.";
 
 const DB_CONNECTION = {
   user: process.env.DB_USER || "postgres",
