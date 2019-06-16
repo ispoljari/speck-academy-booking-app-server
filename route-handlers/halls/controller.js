@@ -91,6 +91,14 @@ const updateHall = async (request, response) => {
     }
 
     const { name, address, pictureUrl, description } = request.body;
+    const hallWithUniqueName = await hallRepository.getHallByName(name);
+    if (hallWithUniqueName) {
+      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+        message: "Hall with that name already exists"
+      });
+      return;
+    }
+
     Object.assign(
       hall,
       _.omitBy(
