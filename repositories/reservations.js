@@ -73,12 +73,13 @@ const getAllByReservationStatus = async () => {
 const getAllOverlappingReservations = async (
   reservationDate,
   reservationStartTime,
-  reservationEndTime
+  reservationEndTime,
+  hallFk
 ) => {
   const dbResponse = await db.query(
     `SELECT * FROM Reservations WHERE reservation_date = $1 
-  AND reservation_start_time < $2 AND reservation_end_time > $3`,
-    [reservationDate, reservationEndTime, reservationStartTime]
+  AND reservation_start_time < $2 AND reservation_end_time > $3 AND hall_fk = $4`,
+    [reservationDate, reservationEndTime, reservationStartTime, hallFk]
   );
   return dbResponse.rows.map(mapReservations);
 };
