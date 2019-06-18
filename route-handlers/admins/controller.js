@@ -4,21 +4,21 @@ const bcrypt = require("bcrypt");
 const { DateTime } = require("luxon");
 const sessionsRepository = require("../../repositories/sessions");
 const { HTTP_STATUS_CODES } = require("../../enums");
+const {
+  adminInvalidCredentials,
+  unauthorized
+} = require("../../enums/error-responses");
 
-const adminLogin = async (request, response) => {
+const adminLogin = async (request, response, next) => {
   try {
     const { userName, password } = request.body;
     const admin = await adminsRepository.getByUserName(userName);
     if (!admin) {
-      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-        message: "Invalid credentials"
-      });
+      next(adminInvalidCredentials);
       return;
     }
     if (!(await bcrypt.compare(password, admin.hashedPassword))) {
-      response.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-        message: "Invalid credentials"
-      });
+      next(adminInvalidCredentials);
       return;
     }
     const uuid = uuidv4();
@@ -37,18 +37,14 @@ const adminLogin = async (request, response) => {
     });
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
-    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const adminLogout = async (request, response) => {
+const adminLogout = async (request, response, next) => {
   try {
     if (!request.isAdmin) {
-      response.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
-        message: "Not authorized"
-      });
+      next(unauthorized);
       return;
     }
     const { sessionId } = request.signedCookies;
@@ -56,9 +52,7 @@ const adminLogout = async (request, response) => {
     response.clearCookie("sessionId");
     response.status(HTTP_STATUS_CODES.OK).json({});
   } catch (error) {
-    response.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: error.message
-    });
+    next(error);
   }
 };
 
