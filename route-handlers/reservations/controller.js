@@ -66,6 +66,22 @@ const createReservation = async (request, response, next) => {
       citizenPhoneNumber
     } = body;
 
+    if (
+      !(
+        reservationTitle &&
+        reservationDescription &&
+        reservationDate &&
+        reservationStartTime &&
+        reservationEndTime &&
+        citizenFullName &&
+        citizenEmail &&
+        citizenPhoneNumber
+      )
+    ) {
+      next(err.reservationNotNull);
+      return;
+    }
+
     const hallFk = parseInt(body.hallFk);
     if (isNaN(hallFk)) {
       next(err.hallFkNan);
