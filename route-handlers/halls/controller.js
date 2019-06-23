@@ -192,6 +192,15 @@ const getHallByIdWithReservations = async (request, response, next) => {
   }
 };
 
+const getHallsWithReservations = async (request, response, next) => {
+  try {
+    const halls = await hallRepository.getAllWithReservations();
+    response.status(HTTP_STATUS_CODES.OK).json(halls);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getHalls,
   getHallById,
@@ -199,5 +208,6 @@ module.exports = {
   updateHall,
   deleteHall,
   getHallsWithReservationsByReservationDateRange,
-  getHallByIdWithReservations
+  getHallByIdWithReservations,
+  getHallsWithReservations
 };

@@ -43,7 +43,7 @@ const mapHalls = dbHall => ({
   createdAt: dbHall.created_at,
   updatedAt: dbHall.updated_at,
   ...(dbHall.hall_reservations
-    ? { hallReservaltions: dbHall.hall_reservations.map(mapReservations) }
+    ? { hallReservations: dbHall.hall_reservations.map(mapReservations) }
     : {})
 });
 
