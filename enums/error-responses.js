@@ -80,6 +80,16 @@ const startDateTimeValidation = {
   message: "Reservation cannot be in the past"
 };
 
+const reservationNotNull = {
+  status: HTTP_STATUS_CODES.BAD_REQUEST,
+  message: "Reservation cannot contain a null value"
+};
+
+const hallNotNull = {
+  status: HTTP_STATUS_CODES.BAD_REQUEST,
+  message: "Hall cannot contain a null value"
+};
+
 module.exports = {
   idNan,
   hallDoesNotExist,
@@ -96,5 +106,7 @@ module.exports = {
   hallFkNan,
   hallFkDoesNotExist,
   NotValidReservationEnumValues,
-  startDateTimeValidation
+  startDateTimeValidation,
+  reservationNotNull,
+  hallNotNull
 };

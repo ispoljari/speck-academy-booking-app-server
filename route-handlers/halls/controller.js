@@ -40,6 +40,10 @@ const createHall = async (request, response, next) => {
     }
 
     const { name, address, pictureUrl, description } = request.body;
+    if (!(name && address && pictureUrl && description)) {
+      next(err.hallNotNull);
+      return;
+    }
     const hall = await hallRepository.getHallByName(name);
     if (hall) {
       next(err.hallAlreadyExists);
@@ -90,6 +94,11 @@ const updateHall = async (request, response, next) => {
         _.isUndefined
       )
     );
+
+    if (!(hall.name && hall.address && hall.pictureUrl && hall.description)) {
+      next(err.hallNotNull);
+      return;
+    }
 
     await hallRepository.update(
       hall.name,
@@ -183,6 +192,15 @@ const getHallByIdWithReservations = async (request, response, next) => {
   }
 };
 
+const getHallsWithReservations = async (request, response, next) => {
+  try {
+    const halls = await hallRepository.getAllWithReservations();
+    response.status(HTTP_STATUS_CODES.OK).json(halls);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getHalls,
   getHallById,
@@ -190,5 +208,6 @@ module.exports = {
   updateHall,
   deleteHall,
   getHallsWithReservationsByReservationDateRange,
-  getHallByIdWithReservations
+  getHallByIdWithReservations,
+  getHallsWithReservations
 };

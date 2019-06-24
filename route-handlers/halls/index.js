@@ -6,12 +6,13 @@ const {
   updateHall,
   deleteHall,
   getHallsWithReservationsByReservationDateRange,
-  getHallByIdWithReservations
+  getHallByIdWithReservations,
+  getHallsWithReservations
 } = require("./controller");
 
 const router = new express.Router();
 
-router.route("/").get(getHalls);
+router.route("/").get(getHallsWithReservations);
 router.route("/create").post(createHall);
 router
   .route("/reservations")

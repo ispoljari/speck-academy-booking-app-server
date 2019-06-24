@@ -66,6 +66,17 @@ const getHallByName = async name => {
   return dbResponse.rows.length > 0 ? mapHalls(dbResponse.rows[0]) : null;
 };
 
+const getAllWithReservations = async () => {
+  const dbResponse = await db.query(`
+  SELECT Halls.*, json_agg(json_build_object('reservation_date', reservation_date, 'reservation_start_time',
+   reservation_start_time, 'reservation_end_time', reservation_end_time))
+  as hall_reservations
+  FROM Halls JOIN reservations ON Halls.id = hall_fk 
+  GROUP BY Halls.id
+  ORDER BY id ASC`);
+  return dbResponse.rows.map(mapHalls);
+};
+
 module.exports = {
   getAll,
   getById,
@@ -74,5 +85,6 @@ module.exports = {
   deleteById,
   getAllWithReservationsByReservationDateRange,
   getByIdWithReservations,
-  getHallByName
+  getHallByName,
+  getAllWithReservations
 };
