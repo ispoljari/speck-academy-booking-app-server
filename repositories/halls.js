@@ -71,10 +71,18 @@ const getAllWithReservations = async () => {
   SELECT Halls.*, json_agg(json_build_object('reservation_date', reservation_date, 'reservation_start_time',
    reservation_start_time, 'reservation_end_time', reservation_end_time))
   as hall_reservations
-  FROM Halls JOIN reservations ON Halls.id = hall_fk 
+  FROM Halls LEFT JOIN reservations ON Halls.id = hall_fk 
   GROUP BY Halls.id
   ORDER BY id ASC`);
-  return dbResponse.rows.map(mapHalls);
+  const halls = dbResponse.rows.map(mapHalls);
+  return halls.map(h => ({
+    ...h,
+    hallReservations:
+      h.hallReservations.length === 1 &&
+      h.hallReservations[0].reservationDate === null
+        ? []
+        : h.hallReservations
+  }));
 };
 
 module.exports = {

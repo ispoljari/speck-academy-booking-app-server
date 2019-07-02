@@ -3,15 +3,6 @@ const { HTTP_STATUS_CODES } = require("../../enums");
 const _ = require("lodash");
 const err = require("../../enums/error-responses");
 
-const getHalls = async (request, response, next) => {
-  try {
-    const halls = await hallRepository.getAll();
-    response.status(HTTP_STATUS_CODES.OK).json(halls);
-  } catch (error) {
-    next(error);
-  }
-};
-
 const getHallById = async (request, response, next) => {
   try {
     const id = parseInt(request.params.id);
@@ -202,7 +193,6 @@ const getHallsWithReservations = async (request, response, next) => {
 };
 
 module.exports = {
-  getHalls,
   getHallById,
   createHall,
   updateHall,
