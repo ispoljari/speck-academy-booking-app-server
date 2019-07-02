@@ -1,6 +1,5 @@
 const express = require("express");
 const {
-  getHalls,
   getHallById,
   createHall,
   updateHall,
