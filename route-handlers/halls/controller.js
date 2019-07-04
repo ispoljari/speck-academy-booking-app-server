@@ -67,11 +67,6 @@ const updateHall = async (request, response, next) => {
     }
 
     const { name, address, pictureUrl, description } = request.body;
-    const hallWithUniqueName = await hallRepository.getHallByName(name);
-    if (hallWithUniqueName) {
-      next(err.hallAlreadyExists);
-      return;
-    }
 
     Object.assign(
       hall,
